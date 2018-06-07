@@ -16,10 +16,7 @@ module.exports = (req, res) => {
         let tagName = qs.parse(body).tagName;
 
         if (tagName === "" || tagName === "Your tag") {
-          res.writeHead(302, {
-            Location: "/"
-          });
-          res.end();
+          res.redirectToHome();
           return;
         }
 
@@ -32,8 +29,7 @@ module.exports = (req, res) => {
         Tag.create(tag).then(() => {
           fs.readFile('./views/index.html', (err, data) => {
             if (err) {
-              console.log(err);
-              return;
+              throw err;
             }
   
             Tag.find().then((tags) => {
@@ -43,19 +39,12 @@ module.exports = (req, res) => {
               }
   
               let html = data.toString().replace(replacementPlaceholder, replacementHtml);
-              res.writeHead(200, {
-                'Content-Type': 'text/html'
-              });
-              res.write(html);
-              res.end();
+              res.sendHtml(html);
             });
           });
         }).catch(err => {
           console.log(err.message);
-          res.writeHead(302, {
-            Location: "/"
-          });
-          res.end();
+          res.redirectToHome();
         });
     });
   } else {

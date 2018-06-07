@@ -16,10 +16,7 @@ function addImage(req, res) {
       if (formImage.imageUrl === "" 
         || formImage.imageUrl === "Your URL" 
         || formImage.imageTitle === "") {
-          res.writeHead(302, {
-            Location: "/"
-          });
-          res.end();
+          res.redirectToHome();
           return;
       }
       
@@ -41,22 +38,16 @@ function addImage(req, res) {
           });
         }
 
-        res.writeHead(302, {
-          Location: "/"
-        });
-        res.end();
+        res.redirectToHome();
       }).catch(err => {
         console.log(err.message);
-        res.writeHead(302, {
-          Location: "/"
-        });
-        res.end();
+        res.redirectToHome();
       });
   });
 }
 
 function deleteImg(req, res) {
-  let imageId = qs.parse(url.parse(req.url).query).id;
+  let imageId = req.pathquery.id;
   Image.deleteOne({_id: imageId}).then(() => {
     Tag.find({}).then((tags) => {
       for (let tag of tags) {
@@ -67,17 +58,11 @@ function deleteImg(req, res) {
         }
       }
 
-      res.writeHead("302", {
-        Location: "/"
-      });
-      res.end();
+      res.redirectToHome();
     });
   }).catch(err => {
     console.log(err);
-    res.writeHead("302", {
-      Location: "/"
-    });
-    res.end();
+    res.redirectToHome();
   });
 }
 

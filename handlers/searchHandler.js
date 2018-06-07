@@ -15,8 +15,8 @@ function getTagNames(formTags) {
       });
     } else {
       let tagNames = formTags.split(/[\s,]+/)
-      .filter(tag => tag !== "")
-      .map(tag => tag.trim());
+        .filter(tag => tag !== "")
+        .map(tag => tag.trim());
 
       resolve(tagNames);
     }
@@ -27,11 +27,10 @@ module.exports = (req, res) => {
   if (req.pathname.startsWith('/search')) {
     fs.readFile("./views/results.html", (err, data) => {
       if (err) {
-        console.log(err);
-        return;
+        throw err;
       }
 
-      let formData = qs.parse(url.parse(req.url).query);
+      let formData = req.pathquery;
       
       getTagNames(formData.tagName).then((tagNames) => {
         let afterDate = formData.afterDate === "" ? new Date(0) : Date.parse(formData.afterDate);
@@ -48,31 +47,28 @@ module.exports = (req, res) => {
             let replacementHtml = '';
 
             for (let image of images) {
-              replacementHtml += `
-                <fieldset>
-                  <legend>${image.imageTitle}:</legend> 
-                  <img src="${image.imageUrl}" />
-                  <p>${image.description}<p/>
-                  <button onclick='location.href="/delete?id=${image._id}"' class='deleteBtn'>Delete</button> 
-              </fieldset>`;
+              replacementHtml += generateImageHtml(image);
             }
   
             let html = data.toString().replace(htmlPlaceholder, replacementHtml);
-            res.writeHead(200, {
-              "content-type": "text/html"
-            });
-            res.write(html);
-            res.end();
+            res.sendHtml(html);
         }).catch(err => {
           console.log(err);
-          res.writeHead(302, {
-            Location: "/"
-          });
-          res.end();
+          res.redirectToHome();
         });
       });
     });
   } else {
     return true
   }
+}
+
+function generateImageHtml(image) {
+  return `
+    <fieldset>
+      <legend>${image.imageTitle}:</legend> 
+      <img src="${image.imageUrl}" />
+      <p>${image.description}<p/>
+      <button onclick='location.href="/delete?id=${image._id}"' class='deleteBtn'>Delete</button> 
+    </fieldset>`;
 }
